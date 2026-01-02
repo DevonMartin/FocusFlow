@@ -27,7 +27,19 @@
 		008DA0D52F0840210028567F /* FocusFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FocusFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		008DA0E42F0840220028567F /* FocusFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocusFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		008DA0EE2F0840220028567F /* FocusFlowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocusFlowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		008DA1012F0840F00028567F /* CLAUDE.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CLAUDE.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		008DA1052F0841360028567F /* Exceptions for "docs" folder in "FocusFlow" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"FocusFlow-Project-Spec.md",
+				"FocusFlow-Roadmap.md",
+			);
+			target = 008DA0D42F0840210028567F /* FocusFlow */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		008DA0D72F0840210028567F /* FocusFlow */ = {
@@ -43,6 +55,14 @@
 		008DA0F12F0840220028567F /* FocusFlowUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = FocusFlowUITests;
+			sourceTree = "<group>";
+		};
+		008DA1032F08411C0028567F /* docs */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				008DA1052F0841360028567F /* Exceptions for "docs" folder in "FocusFlow" target */,
+			);
+			path = docs;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +95,8 @@
 		008DA0CC2F0840210028567F = {
 			isa = PBXGroup;
 			children = (
+				008DA1012F0840F00028567F /* CLAUDE.md */,
+				008DA1032F08411C0028567F /* docs */,
 				008DA0D72F0840210028567F /* FocusFlow */,
 				008DA0E72F0840220028567F /* FocusFlowTests */,
 				008DA0F12F0840220028567F /* FocusFlowUITests */,
@@ -109,6 +131,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				008DA0D72F0840210028567F /* FocusFlow */,
+				008DA1032F08411C0028567F /* docs */,
 			);
 			name = FocusFlow;
 			packageProductDependencies = (
