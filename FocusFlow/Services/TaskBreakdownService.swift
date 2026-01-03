@@ -9,7 +9,7 @@ import Foundation
 import FoundationModels
 
 /// User's self-reported pace for time estimates
-enum UserPace: String, Codable, CaseIterable {
+enum UserPace: String, Codable, CaseIterable, Sendable {
     case slower
     case average
     case faster
@@ -22,7 +22,7 @@ enum UserPace: String, Codable, CaseIterable {
         }
     }
 
-    fileprivate var promptFragment: String {
+    var promptFragment: String {
         switch self {
         case .slower:
             return "Time estimates should be generous - this person prefers extra buffer time"
@@ -34,27 +34,11 @@ enum UserPace: String, Codable, CaseIterable {
     }
 }
 
+/// Pure service for breaking down tasks using Foundation Models.
+/// Contains no UI state - use TaskBreakdownViewModel for observable state.
+/// Main actor-isolated because SystemLanguageModel.default requires it.
 @MainActor
-@Observable
-class TaskBreakdownService {
-    private(set) var isProcessing = false
-    private(set) var lastError: Error?
-
-    var userPace: UserPace = .average
-
-    private var systemPrompt: String {
-        """
-        You are a supportive task assistant. Your job is to break down tasks into small, concrete, actionable steps.
-
-        Guidelines:
-        - Each step should be a single, clear action (not multiple actions)
-        - Steps should be ordered logically
-        - \(userPace.promptFragment)
-        - Use encouraging, clear language
-        - Prefer shorter steps (5-15 minutes) over longer ones
-        - Include "getting started" steps when relevant (gather materials, open app, etc.)
-        """
-    }
+struct TaskBreakdownService {
 
     var isAvailable: Bool {
         SystemLanguageModel.default.isAvailable
@@ -75,31 +59,37 @@ class TaskBreakdownService {
         }
     }
 
-    /// Breaks down a task and returns the complete result
-    func breakdownTask(_ description: String) async throws -> TaskBreakdown {
+    /// Breaks down a task into manageable steps
+    /// - Parameters:
+    ///   - description: The task to break down
+    ///   - pace: User's preferred pace for time estimates
+    /// - Returns: A TaskBreakdown with steps, complexity, and category
+    func breakdownTask(_ description: String, pace: UserPace = .average) async throws -> TaskBreakdown {
         guard isAvailable else {
             throw TaskBreakdownError.notAvailable(unavailabilityReason ?? "Unknown error")
         }
 
-        isProcessing = true
-        lastError = nil
-        defer { isProcessing = false }
+        let systemPrompt = """
+            You are a supportive task assistant. Your job is to break down tasks into small, concrete, actionable steps.
+
+            Guidelines:
+            - Each step should be a single, clear action (not multiple actions)
+            - Steps should be ordered logically
+            - \(pace.promptFragment)
+            - Use encouraging, clear language
+            - Prefer shorter steps (5-15 minutes) over longer ones
+            - Include "getting started" steps when relevant (gather materials, open app, etc.)
+            """
+
+        let session = LanguageModelSession { systemPrompt }
 
         do {
-            let prompt = systemPrompt
-            let session = LanguageModelSession { prompt }
-
             let response = try await session.respond(
                 to: "Break down this task into manageable steps: \(description)",
                 generating: TaskBreakdown.self
             )
-
             return response.content
-        } catch let error as TaskBreakdownError {
-            lastError = error
-            throw error
         } catch {
-            lastError = error
             throw TaskBreakdownError.generationFailed
         }
     }

@@ -110,12 +110,13 @@ struct UserPaceTests {
 @MainActor
 struct TaskBreakdownServiceTests {
 
-    @Test("Service initializes with correct default state")
-    func init_hasCorrectDefaults() {
+    @Test("Service reports availability status")
+    func isAvailable_reportsStatus() {
         let service = TaskBreakdownService()
 
-        #expect(service.isProcessing == false)
-        #expect(service.lastError == nil)
+        // Just verify we can check availability without crashing
+        _ = service.isAvailable
+        _ = service.unavailabilityReason
     }
 
     @Test("Breaks down task with valid output structure")
@@ -138,22 +139,78 @@ struct TaskBreakdownServiceTests {
         }
     }
 
-    @Test("Sets isProcessing during breakdown")
-    func breakdownTask_setsIsProcessing() async throws {
+    @Test("Accepts pace parameter")
+    func breakdownTask_acceptsPace() async throws {
         let service = TaskBreakdownService()
         try #require(service.isAvailable, "Apple Intelligence unavailable")
 
-        #expect(service.isProcessing == false)
+        // Just verify the pace parameter is accepted
+        let breakdown = try await service.breakdownTask("Make tea", pace: .faster)
+        #expect(!breakdown.steps.isEmpty)
+    }
+}
+
+@Suite("TaskBreakdownViewModel")
+@MainActor
+struct TaskBreakdownViewModelTests {
+
+    @Test("ViewModel initializes with correct default state")
+    func init_hasCorrectDefaults() {
+        let viewModel = TaskBreakdownViewModel()
+
+        #expect(viewModel.isProcessing == false)
+        #expect(viewModel.lastError == nil)
+        #expect(viewModel.lastBreakdown == nil)
+        #expect(viewModel.userPace == .average)
+    }
+
+    @Test("ViewModel exposes service availability")
+    func isAvailable_exposesServiceAvailability() {
+        let viewModel = TaskBreakdownViewModel()
+
+        // Just verify we can check availability
+        _ = viewModel.isAvailable
+        _ = viewModel.unavailabilityReason
+    }
+
+    @Test("Sets isProcessing during breakdown")
+    func breakdownTask_setsIsProcessing() async throws {
+        let viewModel = TaskBreakdownViewModel()
+        try #require(viewModel.isAvailable, "Apple Intelligence unavailable")
+
+        #expect(viewModel.isProcessing == false)
 
         // Start task but don't await immediately
-        async let breakdown = service.breakdownTask("Make a sandwich")
+        async let breakdown = viewModel.breakdownTask("Make a sandwich")
 
         // Give it a moment to start
         try await Task.sleep(for: .milliseconds(50))
-        #expect(service.isProcessing == true)
+        #expect(viewModel.isProcessing == true)
 
         // Now await completion
         _ = try await breakdown
-        #expect(service.isProcessing == false)
+        #expect(viewModel.isProcessing == false)
+    }
+
+    @Test("Stores last breakdown on success")
+    func breakdownTask_storesLastBreakdown() async throws {
+        let viewModel = TaskBreakdownViewModel()
+        try #require(viewModel.isAvailable, "Apple Intelligence unavailable")
+
+        #expect(viewModel.lastBreakdown == nil)
+
+        let breakdown = try await viewModel.breakdownTask("Organize desk")
+
+        #expect(viewModel.lastBreakdown != nil)
+        #expect(viewModel.lastBreakdown?.taskName == breakdown.taskName)
+    }
+
+    @Test("clearError resets lastError")
+    func clearError_resetsLastError() {
+        let viewModel = TaskBreakdownViewModel()
+
+        // Can always call clearError even if no error
+        viewModel.clearError()
+        #expect(viewModel.lastError == nil)
     }
 }
