@@ -8,12 +8,18 @@
 import Foundation
 import SwiftData
 
+enum Difficulty: String, Codable, CaseIterable {
+    case easy
+    case medium
+    case hard
+}
+
 @Model
 final class SubtaskRecord {
     @Attribute(.unique) var id: UUID
     var title: String
     var estimatedMinutes: Int
-    var difficulty: String  // "easy", "medium", "hard"
+    var difficulty: Difficulty
     var orderIndex: Int
     var isComplete: Bool
 
@@ -27,7 +33,7 @@ final class SubtaskRecord {
     init(
         title: String,
         estimatedMinutes: Int = 10,
-        difficulty: String = "medium",
+        difficulty: Difficulty = .medium,
         orderIndex: Int = 0
     ) {
         self.id = UUID()

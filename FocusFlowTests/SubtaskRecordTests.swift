@@ -18,7 +18,7 @@ struct SubtaskRecordTests {
 
         #expect(subtask.title == "Gather supplies")
         #expect(subtask.estimatedMinutes == 10)
-        #expect(subtask.difficulty == "medium")
+        #expect(subtask.difficulty == .medium)
         #expect(subtask.orderIndex == 0)
         #expect(subtask.isComplete == false)
         #expect(subtask.task == nil)
@@ -29,13 +29,13 @@ struct SubtaskRecordTests {
         let subtask = SubtaskRecord(
             title: "Write introduction",
             estimatedMinutes: 20,
-            difficulty: "hard",
+            difficulty: .hard,
             orderIndex: 3
         )
 
         #expect(subtask.title == "Write introduction")
         #expect(subtask.estimatedMinutes == 20)
-        #expect(subtask.difficulty == "hard")
+        #expect(subtask.difficulty == .hard)
         #expect(subtask.orderIndex == 3)
     }
 
@@ -45,17 +45,6 @@ struct SubtaskRecordTests {
         let subtask2 = SubtaskRecord(title: "Step 2")
 
         #expect(subtask1.id != subtask2.id)
-    }
-
-    @Test("Difficulty accepts valid values")
-    func difficulty_acceptsValidValues() {
-        let easy = SubtaskRecord(title: "Easy step", difficulty: "easy")
-        let medium = SubtaskRecord(title: "Medium step", difficulty: "medium")
-        let hard = SubtaskRecord(title: "Hard step", difficulty: "hard")
-
-        #expect(easy.difficulty == "easy")
-        #expect(medium.difficulty == "medium")
-        #expect(hard.difficulty == "hard")
     }
 }
 
@@ -109,5 +98,27 @@ struct SubtaskRecordPersistenceTests {
 
         #expect(sorted[0].isComplete == true)
         #expect(sorted[1].isComplete == false)
+    }
+
+    @Test("Difficulty enum persists correctly")
+    func difficulty_persistsCorrectly() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+
+        let task = TaskRecord(taskDescription: "Test task")
+        task.subtasks = [
+            SubtaskRecord(title: "Easy step", difficulty: .easy, orderIndex: 0),
+            SubtaskRecord(title: "Hard step", difficulty: .hard, orderIndex: 1)
+        ]
+
+        context.insert(task)
+        try context.save()
+
+        let descriptor = FetchDescriptor<SubtaskRecord>()
+        let fetched = try context.fetch(descriptor)
+        let sorted = fetched.sorted { $0.orderIndex < $1.orderIndex }
+
+        #expect(sorted[0].difficulty == .easy)
+        #expect(sorted[1].difficulty == .hard)
     }
 }
