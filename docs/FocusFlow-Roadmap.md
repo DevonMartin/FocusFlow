@@ -13,9 +13,9 @@ Personal checklist for tracking progress. Check items off as you complete them.
 - [X] Initial commit
 
 ### Design System
-- [ ] `DesignSystem/Colors.swift` — Teal palette, no reds
-- [ ] `DesignSystem/Typography.swift` — Rounded fonts, timer styles
-- [ ] `DesignSystem/Language.swift` — All ADHD-friendly copy
+- [X] `DesignSystem/Colors.swift` — Teal palette, no reds
+- [X] `DesignSystem/Typography.swift` — Rounded fonts, timer styles
+- [X] `DesignSystem/Language.swift` — All ADHD-friendly copy
 
 ### Data Models
 - [ ] `Models/TaskRecord.swift` — Main task with SwiftData @Model
