@@ -18,10 +18,10 @@ Personal checklist for tracking progress. Check items off as you complete them.
 - [X] `DesignSystem/Language.swift` — All ADHD-friendly copy
 
 ### Data Models
-- [ ] `Models/TaskRecord.swift` — Main task with SwiftData @Model
-- [ ] `Models/SubtaskRecord.swift` — Child steps with cascade delete
-- [ ] `Tests/ModelTests/TaskRecordTests.swift`
-- [ ] `Tests/ModelTests/SubtaskRecordTests.swift`
+- [X] `Models/TaskRecord.swift` — Main task with SwiftData @Model
+- [X] `Models/SubtaskRecord.swift` — Child steps with cascade delete
+- [X] `Tests/ModelTests/TaskRecordTests.swift`
+- [X] `Tests/ModelTests/SubtaskRecordTests.swift`
 
 ### Basic UI
 - [ ] `Views/TaskList/TaskListView.swift` — Main list screen
@@ -55,9 +55,9 @@ Personal checklist for tracking progress. Check items off as you complete them.
 ## Week 5-6: Timer & Live Activity
 
 ### Time Estimation
-- [ ] `Utilities/EWMAEstimator.swift` — Exponential weighted moving average
+- [X] `Utilities/EWMAEstimator.swift` — Exponential weighted moving average
 - [ ] `Services/TimeEstimationService.swift` — Progressive tiers
-- [ ] `Tests/UtilityTests/EWMAEstimatorTests.swift`
+- [X] `Tests/UtilityTests/EWMAEstimatorTests.swift`
 - [ ] Confidence display ("rough guess" → "based on your history")
 
 ### Live Activity

@@ -73,12 +73,6 @@ extension DesignSystem {
         static let emptyTaskList = "Ready to add your first task?"
         static let noSubtasks = "No steps yet"
 
-        // MARK: - Confidence Levels
-
-        static let confidenceLow = "rough guess"
-        static let confidenceMedium = "based on a few similar tasks"
-        static let confidenceHigh = "based on your history"
-
         // MARK: - AI Status
 
         static let aiProcessing = "Breaking this down..."
