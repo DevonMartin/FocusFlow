@@ -86,12 +86,14 @@ FocusFlow/
 
 ## Reference Documents
 
-The full project specification with code examples, data models, and design system is in `FocusFlow-Project-Spec.md`. Reference it for:
-- Complete SwiftData model definitions
-- Foundation Models @Generable struct patterns
-- EWMAEstimator implementation
-- Live Activity widget code
-- ADHD-friendly color palette and copy
+The project specification (`docs/FocusFlow-Project-Spec.md`) and roadmap (`docs/FocusFlow-Roadmap.md`) are **references, not strict guides**. Use them for context and patterns, but apply your own judgment. Evaluate trade-offs, consider best practices, and choose the right approach for each situation — don't copy code verbatim without thinking it through.
+
+Reference the spec for:
+- SwiftData model patterns
+- Foundation Models @Generable struct examples
+- EWMAEstimator approach
+- Live Activity widget patterns
+- ADHD-friendly color palette and copy guidelines
 - Test examples
 
 ## MVP Scope
