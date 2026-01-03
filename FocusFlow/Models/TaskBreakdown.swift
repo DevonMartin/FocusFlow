@@ -8,7 +8,7 @@
 import Foundation
 import FoundationModels
 
-// MARK: - Task Category
+// MARK: - Enums
 
 @Generable
 enum TaskCategory: String, Codable, CaseIterable, Sendable {
@@ -22,6 +22,13 @@ enum TaskCategory: String, Codable, CaseIterable, Sendable {
     case creative
     case social
     case other
+}
+
+@Generable
+enum Difficulty: String, Codable, CaseIterable, Sendable {
+    case easy
+    case medium
+    case hard
 }
 
 // MARK: - Task Breakdown
@@ -51,6 +58,5 @@ struct TaskStep {
     @Guide(description: "Estimated minutes for this step", .range(1...120))
     let estimatedMinutes: Int
 
-    @Guide(.anyOf(["easy", "medium", "hard"]))
-    let difficulty: String
+    let difficulty: Difficulty
 }

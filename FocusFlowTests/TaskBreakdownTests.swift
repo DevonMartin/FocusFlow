@@ -16,19 +16,19 @@ struct TaskBreakdownModelTests {
         let step = TaskStep(
             description: "Gather cleaning supplies",
             estimatedMinutes: 5,
-            difficulty: "easy"
+            difficulty: .easy
         )
 
         #expect(step.description == "Gather cleaning supplies")
         #expect(step.estimatedMinutes == 5)
-        #expect(step.difficulty == "easy")
+        #expect(step.difficulty == .easy)
     }
 
     @Test("TaskBreakdown initializes with all properties")
     func taskBreakdown_init_setsAllProperties() {
         let steps = [
-            TaskStep(description: "Step 1", estimatedMinutes: 10, difficulty: "easy"),
-            TaskStep(description: "Step 2", estimatedMinutes: 15, difficulty: "medium")
+            TaskStep(description: "Step 1", estimatedMinutes: 10, difficulty: .easy),
+            TaskStep(description: "Step 2", estimatedMinutes: 15, difficulty: .medium)
         ]
 
         let breakdown = TaskBreakdown(
@@ -118,7 +118,7 @@ struct TaskBreakdownServiceTests {
         for step in breakdown.steps {
             #expect(!step.description.isEmpty)
             #expect(step.estimatedMinutes >= 1 && step.estimatedMinutes <= 120)
-            #expect(["easy", "medium", "hard"].contains(step.difficulty))
+            #expect(Difficulty.allCases.contains(step.difficulty))
         }
     }
 
