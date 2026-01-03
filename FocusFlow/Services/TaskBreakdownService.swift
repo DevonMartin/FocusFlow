@@ -40,8 +40,16 @@ enum UserPace: String, Codable, CaseIterable, Sendable {
 @MainActor
 struct TaskBreakdownService {
 
+    #if DEBUG
+    /// Set to true to simulate AI being unavailable (for testing fallback UI)
+    var forceDisabled = false
+    #endif
+
     var isAvailable: Bool {
-        SystemLanguageModel.default.isAvailable
+        #if DEBUG
+        if forceDisabled { return false }
+        #endif
+        return SystemLanguageModel.default.isAvailable
     }
 
     var unavailabilityReason: String? {

@@ -24,9 +24,9 @@ Personal checklist for tracking progress. Check items off as you complete them.
 - [X] `Tests/ModelTests/SubtaskRecordTests.swift`
 
 ### Basic UI
-- [ ] `Views/TaskList/TaskListView.swift` — Main list screen
-- [ ] `Views/TaskList/TaskRowView.swift` — Single task row
-- [ ] `Views/Components/GentleButton.swift`
+- [X] `Views/TaskList/TaskListView.swift` — Main list screen
+- [X] `Views/TaskList/TaskRowView.swift` — Single task row
+- [X] `Views/Components/GentleButton.swift`
 - [ ] Task CRUD working (create, read, delete)
 
 ---
@@ -46,8 +46,8 @@ Personal checklist for tracking progress. Check items off as you complete them.
 - [ ] Fallback UI for unsupported devices
 
 ### Availability Handling
-- [ ] Check `SystemLanguageModel.default.isAvailable`
-- [ ] User-friendly messages for each unavailability reason
+- [X] Check `SystemLanguageModel.default.isAvailable`
+- [X] User-friendly messages for each unavailability reason
 - [ ] Graceful degradation (manual task entry without AI)
 
 ---
@@ -56,7 +56,7 @@ Personal checklist for tracking progress. Check items off as you complete them.
 
 ### Time Estimation
 - [X] `Utilities/EWMAEstimator.swift` — Exponential weighted moving average
-- [ ] `Services/TimeEstimationService.swift` — Progressive tiers
+- [X] `Services/TimeEstimationService.swift` — Progressive tiers
 - [X] `Tests/UtilityTests/EWMAEstimatorTests.swift`
 - [ ] Confidence display ("rough guess" → "based on your history")
 
