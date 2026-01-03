@@ -12,25 +12,20 @@ struct EWMAEstimator {
     /// Weight for new data points (0-1). Higher = more reactive to recent data.
     private let alpha: Double
 
-    /// Default estimate when no history exists (30 minutes in seconds)
-    private let defaultEstimate: TimeInterval
-
     /// Current estimates per category
-    private var categoryEstimates: [String: TimeInterval]
+    private var categoryEstimates: [TaskCategory: TimeInterval]
 
     /// Number of data points per category (for confidence calculation)
-    private var categoryCounts: [String: Int]
+    private var categoryCounts: [TaskCategory: Int]
 
     /// Storage for persistence
     private let storage: EWMAStorage
 
     init(
         alpha: Double = 0.3,
-        defaultEstimate: TimeInterval = 1800,
         storage: EWMAStorage = UserDefaultsEWMAStorage()
     ) {
         self.alpha = alpha
-        self.defaultEstimate = defaultEstimate
         self.storage = storage
 
         // Load persisted data
@@ -39,14 +34,14 @@ struct EWMAEstimator {
         self.categoryCounts = persisted.counts
     }
 
-    /// Returns the current estimate for a category
-    func estimate(for category: String) -> TimeInterval {
-        categoryEstimates[category] ?? defaultEstimate
+    /// Returns the current estimate for a category, or nil if no data exists
+    func estimate(for category: TaskCategory) -> TimeInterval? {
+        categoryEstimates[category]
     }
 
     /// Updates the estimate with a new actual duration and persists the change
-    mutating func update(category: String, actualDuration: TimeInterval) {
-        let currentEstimate = categoryEstimates[category] ?? defaultEstimate
+    mutating func update(category: TaskCategory, actualDuration: TimeInterval, baseEstimate: TimeInterval) {
+        let currentEstimate = categoryEstimates[category] ?? baseEstimate
         let newEstimate = alpha * actualDuration + (1 - alpha) * currentEstimate
         categoryEstimates[category] = newEstimate
         categoryCounts[category, default: 0] += 1
@@ -55,13 +50,18 @@ struct EWMAEstimator {
         storage.save(estimates: categoryEstimates, counts: categoryCounts)
     }
 
+    /// Returns total data points across all categories
+    func totalDataPointCount() -> Int {
+        categoryCounts.values.reduce(0, +)
+    }
+
     /// Returns how many data points exist for a category
-    func dataPointCount(for category: String) -> Int {
+    func dataPointCount(for category: TaskCategory) -> Int {
         categoryCounts[category] ?? 0
     }
 
     /// Returns confidence level based on available data
-    func confidenceLevel(for category: String) -> ConfidenceLevel {
+    func confidenceLevel(for category: TaskCategory) -> ConfidenceLevel {
         switch dataPointCount(for: category) {
         case 0..<5:
             return .low
@@ -83,8 +83,8 @@ struct EWMAEstimator {
 // MARK: - Storage Protocol
 
 protocol EWMAStorage: Sendable {
-    func load() -> (estimates: [String: TimeInterval], counts: [String: Int])
-    func save(estimates: [String: TimeInterval], counts: [String: Int])
+    func load() -> (estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int])
+    func save(estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int])
     func clear()
 }
 
@@ -99,15 +99,35 @@ struct UserDefaultsEWMAStorage: EWMAStorage, Sendable {
         self.defaults = defaults
     }
 
-    func load() -> (estimates: [String: TimeInterval], counts: [String: Int]) {
-        let estimates = defaults.dictionary(forKey: estimatesKey) as? [String: TimeInterval] ?? [:]
-        let counts = defaults.dictionary(forKey: countsKey) as? [String: Int] ?? [:]
+    func load() -> (estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int]) {
+        var estimates: [TaskCategory: TimeInterval] = [:]
+        var counts: [TaskCategory: Int] = [:]
+
+        if let rawEstimates = defaults.dictionary(forKey: estimatesKey) as? [String: TimeInterval] {
+            for (key, value) in rawEstimates {
+                if let category = TaskCategory(rawValue: key) {
+                    estimates[category] = value
+                }
+            }
+        }
+
+        if let rawCounts = defaults.dictionary(forKey: countsKey) as? [String: Int] {
+            for (key, value) in rawCounts {
+                if let category = TaskCategory(rawValue: key) {
+                    counts[category] = value
+                }
+            }
+        }
+
         return (estimates, counts)
     }
 
-    func save(estimates: [String: TimeInterval], counts: [String: Int]) {
-        defaults.set(estimates, forKey: estimatesKey)
-        defaults.set(counts, forKey: countsKey)
+    func save(estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int]) {
+        let rawEstimates = Dictionary(uniqueKeysWithValues: estimates.map { ($0.key.rawValue, $0.value) })
+        let rawCounts = Dictionary(uniqueKeysWithValues: counts.map { ($0.key.rawValue, $0.value) })
+
+        defaults.set(rawEstimates, forKey: estimatesKey)
+        defaults.set(rawCounts, forKey: countsKey)
     }
 
     func clear() {
@@ -119,11 +139,11 @@ struct UserDefaultsEWMAStorage: EWMAStorage, Sendable {
 // MARK: - In-Memory Implementation (for testing)
 
 struct InMemoryEWMAStorage: EWMAStorage, Sendable {
-    func load() -> (estimates: [String: TimeInterval], counts: [String: Int]) {
+    func load() -> (estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int]) {
         ([:], [:])
     }
 
-    func save(estimates: [String: TimeInterval], counts: [String: Int]) {
+    func save(estimates: [TaskCategory: TimeInterval], counts: [TaskCategory: Int]) {
         // In-memory storage doesn't persist between instances
         // This is intentional for isolated test runs
     }

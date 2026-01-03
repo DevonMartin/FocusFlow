@@ -34,10 +34,10 @@ Personal checklist for tracking progress. Check items off as you complete them.
 ## Week 3-4: AI Integration
 
 ### Foundation Models Setup
-- [ ] `Models/TaskBreakdown.swift` — @Generable struct for LLM output
-- [ ] `Models/TaskStep.swift` — @Generable struct for individual steps
-- [ ] `Services/TaskBreakdownService.swift` — Streaming + error handling
-- [ ] `Tests/ServiceTests/TaskBreakdownServiceTests.swift`
+- [X] `Models/TaskBreakdown.swift` — @Generable struct for LLM output
+- [X] `Models/TaskStep.swift` — @Generable struct for individual steps
+- [X] `Services/TaskBreakdownService.swift` — Streaming + error handling
+- [X] `Tests/ServiceTests/TaskBreakdownServiceTests.swift`
 
 ### Task Creation Flow
 - [ ] `Views/TaskDetail/CreateTaskView.swift` — Input + AI breakdown

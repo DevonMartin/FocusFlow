@@ -65,12 +65,12 @@ struct TaskRecordTests {
     func aiFields_canBePopulated() {
         let task = TaskRecord(taskDescription: "Clean kitchen")
 
-        task.category = "cleaning"
+        task.category = .cleaning
         task.complexity = 4
         task.stepCount = 5
         task.predictedDuration = 1800
 
-        #expect(task.category == "cleaning")
+        #expect(task.category == .cleaning)
         #expect(task.complexity == 4)
         #expect(task.stepCount == 5)
         #expect(task.predictedDuration == 1800)
@@ -158,7 +158,7 @@ struct TaskRecordPersistenceTests {
         let context = ModelContext(container)
 
         let task = TaskRecord(taskDescription: "Test task")
-        task.category = "work"
+        task.category = .work
         task.complexity = 7
         task.stepCount = 3
         task.predictedDuration = 2400
@@ -169,7 +169,7 @@ struct TaskRecordPersistenceTests {
         let descriptor = FetchDescriptor<TaskRecord>()
         let fetched = try context.fetch(descriptor).first!
 
-        #expect(fetched.category == "work")
+        #expect(fetched.category == .work)
         #expect(fetched.complexity == 7)
         #expect(fetched.stepCount == 3)
         #expect(fetched.predictedDuration == 2400)

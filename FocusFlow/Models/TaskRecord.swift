@@ -16,7 +16,7 @@ final class TaskRecord {
     // MARK: - AI-Generated Fields (nil until breakdown completes)
 
     /// Task category determined by Foundation Models
-    var category: String?
+    var category: TaskCategory?
 
     /// Complexity rating 1-10 from AI analysis
     var complexity: Int?

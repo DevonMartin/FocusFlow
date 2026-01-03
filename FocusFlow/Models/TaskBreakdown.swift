@@ -2,11 +2,29 @@
 //  TaskBreakdown.swift
 //  FocusFlow
 //
-//  Generable struct for Foundation Models task breakdown output.
+//  Generable types for Foundation Models task breakdown output.
 //
 
 import Foundation
 import FoundationModels
+
+// MARK: - Task Category
+
+@Generable
+enum TaskCategory: String, Codable, CaseIterable, Sendable {
+    case cleaning
+    case cooking
+    case organizing
+    case errands
+    case work
+    case selfCare = "self-care"
+    case admin
+    case creative
+    case social
+    case other
+}
+
+// MARK: - Task Breakdown
 
 @Generable
 struct TaskBreakdown {
@@ -22,11 +40,7 @@ struct TaskBreakdown {
     @Guide(description: "Overall complexity 1-10", .range(1...10))
     let complexity: Int
 
-    @Guide(.anyOf([
-        "cleaning", "cooking", "organizing", "errands",
-        "work", "self-care", "admin", "creative", "social", "other"
-    ]))
-    let category: String
+    let category: TaskCategory
 }
 
 @Generable

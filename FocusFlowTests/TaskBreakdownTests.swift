@@ -36,14 +36,14 @@ struct TaskBreakdownModelTests {
             steps: steps,
             totalMinutes: 25,
             complexity: 4,
-            category: "cleaning"
+            category: .cleaning
         )
 
         #expect(breakdown.taskName == "Clean the kitchen")
         #expect(breakdown.steps.count == 2)
         #expect(breakdown.totalMinutes == 25)
         #expect(breakdown.complexity == 4)
-        #expect(breakdown.category == "cleaning")
+        #expect(breakdown.category == .cleaning)
     }
 }
 
@@ -113,7 +113,7 @@ struct TaskBreakdownServiceTests {
         #expect(!breakdown.steps.isEmpty)
         #expect(breakdown.totalMinutes >= 1 && breakdown.totalMinutes <= 480)
         #expect(breakdown.complexity >= 1 && breakdown.complexity <= 10)
-        #expect(["cleaning", "cooking", "organizing", "errands", "work", "self-care", "admin", "creative", "social", "other"].contains(breakdown.category))
+        #expect(TaskCategory.allCases.contains(breakdown.category))
 
         for step in breakdown.steps {
             #expect(!step.description.isEmpty)
