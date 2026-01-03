@@ -1,7 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(git -C \"/Users/devon/Library/Mobile Documents/com~apple~CloudDocs/Developer/iOS/Apps/FocusFlow\" status)"
-    ]
-  }
-}
