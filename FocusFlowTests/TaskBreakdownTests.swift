@@ -34,16 +34,32 @@ struct TaskBreakdownModelTests {
         let breakdown = TaskBreakdown(
             taskName: "Clean the kitchen",
             steps: steps,
-            totalMinutes: 25,
             complexity: 4,
             category: .cleaning
         )
 
         #expect(breakdown.taskName == "Clean the kitchen")
         #expect(breakdown.steps.count == 2)
-        #expect(breakdown.totalMinutes == 25)
         #expect(breakdown.complexity == 4)
         #expect(breakdown.category == .cleaning)
+    }
+
+    @Test("totalMinutes is computed from step estimates")
+    func totalMinutes_sumsStepEstimates() {
+        let steps = [
+            TaskStep(description: "Step 1", estimatedMinutes: 10, difficulty: .easy),
+            TaskStep(description: "Step 2", estimatedMinutes: 15, difficulty: .medium),
+            TaskStep(description: "Step 3", estimatedMinutes: 5, difficulty: .easy)
+        ]
+
+        let breakdown = TaskBreakdown(
+            taskName: "Test task",
+            steps: steps,
+            complexity: 3,
+            category: .work
+        )
+
+        #expect(breakdown.totalMinutes == 30)
     }
 }
 

@@ -41,13 +41,15 @@ struct TaskBreakdown {
     @Guide(description: "Individual action steps, ordered from first to last")
     let steps: [TaskStep]
 
-    @Guide(description: "Total estimated minutes for average person", .range(1...480))
-    let totalMinutes: Int
-
     @Guide(description: "Overall complexity 1-10", .range(1...10))
     let complexity: Int
 
     let category: TaskCategory
+
+    /// Total estimated minutes derived from sum of step estimates
+    var totalMinutes: Int {
+        steps.reduce(0) { $0 + $1.estimatedMinutes }
+    }
 }
 
 @Generable
