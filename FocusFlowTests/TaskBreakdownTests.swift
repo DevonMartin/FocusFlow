@@ -63,24 +63,6 @@ struct TaskBreakdownModelTests {
     }
 }
 
-@Suite("TaskBreakdownError")
-struct TaskBreakdownErrorTests {
-
-    @Test("notAvailable error includes reason")
-    func notAvailable_includesReason() {
-        let error = TaskBreakdownError.notAvailable("Device not supported")
-
-        #expect(error.errorDescription == "Device not supported")
-    }
-
-    @Test("generationFailed has user-friendly message")
-    func generationFailed_hasUserFriendlyMessage() {
-        let error = TaskBreakdownError.generationFailed
-
-        #expect(error.errorDescription == "Couldn't break down that task. Try rephrasing it?")
-    }
-}
-
 @Suite("UserPace")
 struct UserPaceTests {
 

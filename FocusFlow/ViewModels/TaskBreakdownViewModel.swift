@@ -22,7 +22,7 @@ final class TaskBreakdownViewModel {
         service.isAvailable
     }
 
-    var unavailabilityReason: String? {
+    var unavailabilityReason: AIUnavailabilityReason? {
         service.unavailabilityReason
     }
 

@@ -27,16 +27,28 @@ struct TaskListView: View {
     @State private var showingPromptTesting = false
     #endif
 
+    @State private var showingAIUnavailableAlert = false
+    @State private var bannerDismissedThisSession = false
+    @State private var showingBreakdownFailedAlert = false
+    @AppStorage("hasSeenAIUnavailableAlert") private var hasSeenAIUnavailableAlert = false
+
     var body: some View {
         NavigationStack {
             ZStack {
                 DesignSystem.Colors.background
                     .ignoresSafeArea()
 
-                if tasks.isEmpty {
-                    emptyState
-                } else {
-                    taskList
+                VStack(spacing: 0) {
+                    // Dismissible banner (shown each session until dismissed)
+                    if !breakdownService.isAvailable && !bannerDismissedThisSession {
+                        aiBanner
+                    }
+
+                    if tasks.isEmpty {
+                        emptyState
+                    } else {
+                        taskList
+                    }
                 }
             }
             .navigationTitle("Tasks")
@@ -71,6 +83,89 @@ struct TaskListView: View {
             .sheet(isPresented: $showingAddTask) {
                 addTaskSheet
             }
+            .onAppear {
+                // One-time alert (only shown once ever, unless DEBUG)
+                if !breakdownService.isAvailable && !hasSeenAIUnavailableAlert {
+                    showingAIUnavailableAlert = true
+                    #if !DEBUG
+                    hasSeenAIUnavailableAlert = true
+                    #endif
+                }
+            }
+            .alert(aiAlertTitle, isPresented: $showingAIUnavailableAlert) {
+                Button("OK") { }
+            } message: {
+                Text(aiAlertMessage)
+            }
+            .alert(DesignSystem.Language.breakdownFailedTitle, isPresented: $showingBreakdownFailedAlert) {
+                Button("OK") { }
+            } message: {
+                Text(DesignSystem.Language.breakdownFailedMessage)
+            }
+        }
+    }
+
+    // MARK: - AI Availability
+
+    private var aiBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .foregroundStyle(DesignSystem.Colors.neutral)
+
+            Text(aiBannerMessage)
+                .font(DesignSystem.Typography.callout)
+                .foregroundStyle(DesignSystem.Colors.textSecondary)
+
+            Spacer()
+
+            Button {
+                withAnimation {
+                    bannerDismissedThisSession = true
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(DesignSystem.Colors.textSecondary)
+            }
+        }
+        .padding(.horizontal)
+        .padding(.vertical, 10)
+        .background(DesignSystem.Colors.surface)
+        .transition(.move(edge: .top).combined(with: .opacity))
+    }
+
+    private var aiBannerMessage: String {
+        switch breakdownService.unavailabilityReason {
+        case .deviceNotSupported:
+            return DesignSystem.Language.aiBannerDeviceNotSupported
+        case .appleIntelligenceNotEnabled:
+            return DesignSystem.Language.aiBannerIntelligenceOff
+        case .modelNotReady:
+            return DesignSystem.Language.aiBannerModelNotReady
+        case .unknown, .none:
+            return DesignSystem.Language.aiBannerUnknown
+        }
+    }
+
+    private var aiAlertTitle: String {
+        switch breakdownService.unavailabilityReason {
+        case .modelNotReady:
+            return DesignSystem.Language.aiAlertTitleSettingUp
+        case .deviceNotSupported, .appleIntelligenceNotEnabled, .unknown, .none:
+            return DesignSystem.Language.aiAlertTitleUnavailable
+        }
+    }
+
+    private var aiAlertMessage: String {
+        switch breakdownService.unavailabilityReason {
+        case .deviceNotSupported:
+            return DesignSystem.Language.aiAlertDeviceNotSupported
+        case .appleIntelligenceNotEnabled:
+            return DesignSystem.Language.aiAlertIntelligenceOff
+        case .modelNotReady:
+            return DesignSystem.Language.aiAlertModelNotReady
+        case .unknown, .none:
+            return DesignSystem.Language.aiAlertUnknown
         }
     }
 
@@ -299,6 +394,7 @@ struct TaskListView: View {
             } catch {
                 // Task still created, just without AI breakdown
                 print("AI breakdown failed: \(error.localizedDescription)")
+                showingBreakdownFailedAlert = true
             }
         }
 
@@ -379,13 +475,7 @@ struct TaskListView: View {
 #Preview("Empty State") {
     TaskListView()
         .modelContainer(for: TaskRecord.self, inMemory: true)
-}
-
-#Preview("No AI") {
-    let view = TaskListView()
-        .modelContainer(for: TaskRecord.self, inMemory: true)
-    // Note: To test with AI disabled, set breakdownService.forceDisabled = true
-    // in the service's DEBUG block
-    return view
+	// Note: To test with AI disabled, set breakdownService.forceDisabled = true
+	// in the service's DEBUG block
 }
 #endif

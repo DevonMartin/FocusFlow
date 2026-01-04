@@ -76,6 +76,24 @@ extension DesignSystem {
         // MARK: - AI Status
 
         static let aiProcessing = "Breaking this down..."
-        static let aiUnavailable = "AI features aren't available right now"
+        static let breakdownFailedTitle = "Task Added"
+        static let breakdownFailedMessage = "Your task was added, but we couldn't break it into steps this time. You can still work on it!"
+
+        // MARK: - AI Unavailability Alerts
+
+        static let aiAlertTitleUnavailable = "AI Features Unavailable"
+        static let aiAlertTitleSettingUp = "Setting Up AI Features"
+
+        static let aiAlertDeviceNotSupported = "This device doesn't support on-device AI. You can still use FocusFlow, but some features won't be available."
+        static let aiAlertIntelligenceOff = "Enable Apple Intelligence in Settings for the full experience. You can still use the app without it."
+        static let aiAlertModelNotReady = "AI features are still setting up. They should be ready soon."
+        static let aiAlertUnknown = "Some features aren't available right now. You can still use the app."
+
+        // MARK: - AI Unavailability Banners (brief, for banners)
+
+        static let aiBannerDeviceNotSupported = "Some features unavailable on this device"
+        static let aiBannerIntelligenceOff = "Enable Apple Intelligence for the full experience"
+        static let aiBannerModelNotReady = "AI features are still setting up"
+        static let aiBannerUnknown = "Some features unavailable"
     }
 }

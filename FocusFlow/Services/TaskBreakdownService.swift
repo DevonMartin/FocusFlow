@@ -34,6 +34,14 @@ enum UserPace: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// Why AI features are unavailable
+enum AIUnavailabilityReason: Sendable {
+    case deviceNotSupported
+    case appleIntelligenceNotEnabled
+    case modelNotReady
+    case unknown
+}
+
 /// Service for breaking down tasks using Foundation Models.
 /// Creates fresh sessions per request to avoid context bloat.
 /// Main actor-isolated because SystemLanguageModel.default requires it.
@@ -45,13 +53,13 @@ final class TaskBreakdownService {
     private var activeSession: LanguageModelSession?
 
     #if DEBUG
-    /// Set to true to simulate AI being unavailable (for testing fallback UI)
-    var forceDisabled = false
+    /// Simulate unavailability for testing.
+	private var forceUnavailability: AIUnavailabilityReason?
     #endif
 
     var isAvailable: Bool {
         #if DEBUG
-        if forceDisabled { return false }
+        if forceUnavailability != nil { return false }
         #endif
         return SystemLanguageModel.default.isAvailable
     }
@@ -61,18 +69,24 @@ final class TaskBreakdownService {
         activeSession?.isResponding ?? false
     }
 
-    var unavailabilityReason: String? {
+    var unavailabilityReason: AIUnavailabilityReason? {
+        #if DEBUG
+        if let forced = forceUnavailability {
+            return forced
+        }
+        #endif
+
         switch SystemLanguageModel.default.availability {
         case .available:
             return nil
         case .unavailable(.deviceNotEligible):
-            return "This device doesn't support on-device AI. iPhone 15 Pro or newer required."
+            return .deviceNotSupported
         case .unavailable(.appleIntelligenceNotEnabled):
-            return "Please enable Apple Intelligence in Settings to use AI features."
+            return .appleIntelligenceNotEnabled
         case .unavailable(.modelNotReady):
-            return "AI model is still downloading. Please try again in a few minutes."
+            return .modelNotReady
         @unknown default:
-            return "AI features are currently unavailable."
+            return .unknown
         }
     }
 
@@ -119,7 +133,7 @@ final class TaskBreakdownService {
     /// - Returns: A TaskBreakdown with steps, complexity, and category
     func breakdownTask(_ description: String, pace: UserPace = .average) async throws -> TaskBreakdown {
         guard isAvailable else {
-            throw TaskBreakdownError.notAvailable(unavailabilityReason ?? "Unknown error")
+            throw TaskBreakdownError.notAvailable(unavailabilityReason ?? .unknown)
         }
 
         let systemPrompt = """
@@ -150,16 +164,7 @@ final class TaskBreakdownService {
     }
 }
 
-enum TaskBreakdownError: LocalizedError {
-    case notAvailable(String)
+enum TaskBreakdownError: Error {
+    case notAvailable(AIUnavailabilityReason)
     case generationFailed
-
-    var errorDescription: String? {
-        switch self {
-        case .notAvailable(let reason):
-            return reason
-        case .generationFailed:
-            return "Couldn't break down that task. Try rephrasing it?"
-        }
-    }
 }

@@ -40,10 +40,10 @@ Personal checklist for tracking progress. Check items off as you complete them.
 - [X] `Tests/ServiceTests/TaskBreakdownServiceTests.swift`
 
 ### Task Creation Flow
-- [ ] `Views/TaskDetail/CreateTaskView.swift` — Input + AI breakdown
+- [X] `Views/TaskDetail/CreateTaskView.swift` — Input + AI breakdown
 - [ ] `Views/TaskDetail/SubtaskListView.swift` — Display generated steps
-- [ ] Loading states with streaming partial results
-- [ ] Fallback UI for unsupported devices
+- [X] Loading states with streaming partial results
+- [X] Fallback UI for unsupported devices
 
 ### Availability Handling
 - [X] Check `SystemLanguageModel.default.isAvailable`
