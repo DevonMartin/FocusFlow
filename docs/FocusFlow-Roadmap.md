@@ -105,6 +105,22 @@ Personal checklist for tracking progress. Check items off as you complete them.
 
 ## Post-MVP (v1.1)
 
+### Master List
+- [ ] Time horizon categories (this week, this month, 3 months, 6 months, someday)
+- [ ] Add tasks to Master List without immediate focus
+- [ ] Filter/sort by time horizon
+- [ ] Move tasks between horizons as priorities shift
+- [ ] Optional soft deadlines (no guilt, just organization)
+
+### AI Task Suggestions
+- [ ] "What should I do next?" feature
+- [ ] Suggestions based on task age (older tasks surface)
+- [ ] Suggestions based on time available ("I have 30 minutes")
+- [ ] Suggestions based on energy level (if user provides)
+- [ ] Consider deadline proximity in ranking
+- [ ] Learn from which suggestions user accepts/rejects
+
+### Other v1.1 Features
 - [ ] CreateML MLLinearRegressor training pipeline
 - [ ] Background retraining (BGTaskScheduler)
 - [ ] HealthKit sleep correlation

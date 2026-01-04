@@ -994,6 +994,22 @@ struct ProgressRing: View {
 
 ### 🔜 Defer to v1.1
 
+**Master List**
+- Time horizon organization (this week, this month, 3 months, 6 months, someday)
+- Add tasks to a backlog without starting immediately
+- Filter and sort by time horizon
+- Move tasks between horizons as priorities evolve
+- Optional soft deadlines (organizational, not punitive)
+
+**AI Task Suggestions**
+- "What should I do next?" — AI recommends based on:
+  - Task age (older items surface to prevent endless backlog)
+  - Time available ("I have 30 minutes")
+  - Deadline proximity
+  - Energy level (if user provides context)
+- Learning from accepted/rejected suggestions to improve recommendations
+
+**Other v1.1 Features**
 - CreateML MLLinearRegressor training
 - Background retraining via BGTaskScheduler
 - HealthKit sleep/productivity correlation
