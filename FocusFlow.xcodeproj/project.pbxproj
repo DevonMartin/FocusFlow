@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0078B09B2F0AC53E00716FB5 /* FocusFlow.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = FocusFlow.xctestplan; sourceTree = "<group>"; };
 		008DA0D52F0840210028567F /* FocusFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FocusFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		008DA0E42F0840220028567F /* FocusFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocusFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		008DA0EE2F0840220028567F /* FocusFlowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FocusFlowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -95,6 +96,7 @@
 		008DA0CC2F0840210028567F = {
 			isa = PBXGroup;
 			children = (
+				0078B09B2F0AC53E00716FB5 /* FocusFlow.xctestplan */,
 				008DA1012F0840F00028567F /* CLAUDE.md */,
 				008DA1032F08411C0028567F /* docs */,
 				008DA0D72F0840210028567F /* FocusFlow */,

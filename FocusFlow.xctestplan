@@ -1,0 +1,39 @@
+{
+  "configurations" : [
+    {
+      "id" : "BE9C0263-866E-42E3-AD01-68D4F0182BDA",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:FocusFlow.xcodeproj",
+      "identifier" : "008DA0D42F0840210028567F",
+      "name" : "FocusFlow"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:FocusFlow.xcodeproj",
+        "identifier" : "008DA0E32F0840220028567F",
+        "name" : "FocusFlowTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:FocusFlow.xcodeproj",
+        "identifier" : "008DA0ED2F0840220028567F",
+        "name" : "FocusFlowUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
