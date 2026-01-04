@@ -62,3 +62,24 @@ struct TaskStep {
 
     let difficulty: Difficulty
 }
+
+// MARK: - Prompt Legibility Check
+
+@Generable
+enum TaskValidity: String, Sendable {
+    case valid
+    case invalid
+}
+
+@Generable
+struct PromptCheck {
+    @Guide(description: "Brief explanation of what you observe about this input")
+    let reasoning: String
+
+    @Guide(description: "valid if this is a clear actionable task, invalid otherwise")
+    let validity: TaskValidity
+
+    var isActionable: Bool {
+        validity == .valid
+    }
+}

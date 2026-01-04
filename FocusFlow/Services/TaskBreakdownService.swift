@@ -34,11 +34,15 @@ enum UserPace: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// Pure service for breaking down tasks using Foundation Models.
-/// Contains no UI state - use TaskBreakdownViewModel for observable state.
+/// Service for breaking down tasks using Foundation Models.
+/// Creates fresh sessions per request to avoid context bloat.
 /// Main actor-isolated because SystemLanguageModel.default requires it.
 @MainActor
-struct TaskBreakdownService {
+@Observable
+final class TaskBreakdownService {
+
+    /// Current active session (for isResponding check)
+    private var activeSession: LanguageModelSession?
 
     #if DEBUG
     /// Set to true to simulate AI being unavailable (for testing fallback UI)
@@ -50,6 +54,11 @@ struct TaskBreakdownService {
         if forceDisabled { return false }
         #endif
         return SystemLanguageModel.default.isAvailable
+    }
+
+    /// True if a session is currently generating a response
+    var isResponding: Bool {
+        activeSession?.isResponding ?? false
     }
 
     var unavailabilityReason: String? {
@@ -67,6 +76,42 @@ struct TaskBreakdownService {
         }
     }
 
+    /// Checks if user input looks like an actionable task
+    /// - Parameter text: The user's input text
+    /// - Returns: PromptCheck with reasoning and validity
+    func checkPrompt(_ text: String) async throws -> PromptCheck {
+        guard isAvailable else {
+            // If AI unavailable, assume valid and let user proceed
+            return PromptCheck(reasoning: "AI unavailable", validity: .valid)
+        }
+
+        let session = LanguageModelSession {
+            """
+            Classify the input as a valid or invalid task.
+
+            Valid: A clear action someone can do (clean kitchen, call mom, write report).
+            Invalid: Random letters, gibberish, or meaningless text.
+
+            DO NOT interpret random letters as words.
+            DO NOT assume gibberish has hidden meaning.
+            DO NOT classify nonsense strings as valid tasks.
+            """
+        }
+        activeSession = session
+        defer { activeSession = nil }
+
+        do {
+            let response = try await session.respond(
+                to: "Classify: \(text)",
+                generating: PromptCheck.self
+            )
+            return response.content
+        } catch {
+            // On error, assume valid and proceed
+            return PromptCheck(reasoning: "Check failed", validity: .valid)
+        }
+    }
+
     /// Breaks down a task into manageable steps
     /// - Parameters:
     ///   - description: The task to break down
@@ -78,18 +123,20 @@ struct TaskBreakdownService {
         }
 
         let systemPrompt = """
-            You are a supportive task assistant. Your job is to break down tasks into small, concrete, actionable steps.
+            You are a supportive task assistant for people who work best with small, clear steps.
 
-            Guidelines:
-            - Each step should be a single, clear action (not multiple actions)
-            - Steps should be ordered logically
+            Guidelines for breaking down tasks:
+            - Each step should be ONE clear action (not multiple actions combined)
+            - Steps should be in logical order
+            - Prefer short steps (5-15 minutes each)
+            - Include "getting started" steps (gather supplies, open app)
+            - Use encouraging, specific language
             - \(pace.promptFragment)
-            - Use encouraging, clear language
-            - Prefer shorter steps (5-15 minutes) over longer ones
-            - Include "getting started" steps when relevant (gather materials, open app, etc.)
             """
 
         let session = LanguageModelSession { systemPrompt }
+        activeSession = session
+        defer { activeSession = nil }
 
         do {
             let response = try await session.respond(

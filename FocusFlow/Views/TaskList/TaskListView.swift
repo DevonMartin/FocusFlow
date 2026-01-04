@@ -15,19 +15,16 @@ struct TaskListView: View {
     @State private var showingAddTask = false
     @State private var newTaskDescription = ""
     @State private var isCreatingTask = false
+    @State private var showingLegibilityAlert = false
+    @State private var pendingTaskDescription = ""
 
-    private var breakdownService = TaskBreakdownService()
+    @State private var breakdownService = TaskBreakdownService()
     private var estimationService = TimeEstimationService(
         estimator: EWMAEstimator()
     )
 
     #if DEBUG
-    /// Initialize with AI disabled for testing fallback behavior
-    init(forceAIDisabled: Bool = false) {
-        if forceAIDisabled {
-            breakdownService.forceDisabled = true
-        }
-    }
+    @State private var showingPromptTesting = false
     #endif
 
     var body: some View {
@@ -44,6 +41,18 @@ struct TaskListView: View {
             }
             .navigationTitle("Tasks")
             .toolbar {
+                #if DEBUG
+                ToolbarItem(placement: .navigation) {
+                    Button {
+                        showingPromptTesting = true
+                    } label: {
+                        Image(systemName: "testtube.2")
+                            .font(.title3)
+                            .foregroundStyle(DesignSystem.Colors.secondary)
+                    }
+                }
+                #endif
+
                 ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddTask = true
@@ -54,6 +63,11 @@ struct TaskListView: View {
                     }
                 }
             }
+            #if DEBUG
+            .sheet(isPresented: $showingPromptTesting) {
+                PromptTestingView()
+            }
+            #endif
             .sheet(isPresented: $showingAddTask) {
                 addTaskSheet
             }
@@ -169,7 +183,7 @@ struct TaskListView: View {
                     .onSubmit {
                         createTask()
                     }
-                    .disabled(isCreatingTask)
+                    .disabled(isCreatingTask || breakdownService.isResponding)
 
                 if isCreatingTask {
                     HStack(spacing: 12) {
@@ -183,7 +197,7 @@ struct TaskListView: View {
                     GentleButton("Add Task", icon: "plus", style: .primary) {
                         createTask()
                     }
-                    .disabled(newTaskDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(newTaskDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || breakdownService.isResponding)
                 }
 
                 Spacer()
@@ -203,6 +217,16 @@ struct TaskListView: View {
             }
         }
         .presentationDetents([.medium])
+        .alert("Unclear Task", isPresented: $showingLegibilityAlert) {
+            Button("Add Anyway") {
+                createTaskWithoutBreakdown()
+            }
+            Button("Rephrase", role: .cancel) {
+                // Sheet stays open for user to edit
+            }
+        } message: {
+            Text("This doesn't look like an actionable task. Would you like to rephrase it, or add it without AI breakdown?")
+        }
     }
 
     // MARK: - Computed Properties
@@ -225,45 +249,71 @@ struct TaskListView: View {
         isCreatingTask = true
 
         Task {
-            let task = TaskRecord(taskDescription: description)
-            modelContext.insert(task)
-
-            // Try AI breakdown if available
+            // Check if the prompt looks like an actionable task
             if breakdownService.isAvailable {
-                do {
-                    let breakdown = try await breakdownService.breakdownTask(description)
+                let check = (try? await breakdownService.checkPrompt(description)) ?? PromptCheck(reasoning: "", validity: .valid)
 
-                    // Update task with AI results
-                    task.category = breakdown.category
-                    task.complexity = breakdown.complexity
-                    task.stepCount = breakdown.steps.count
-
-                    // Create subtasks from steps
-                    for (index, step) in breakdown.steps.enumerated() {
-                        let subtask = SubtaskRecord(
-                            title: step.description,
-                            estimatedMinutes: step.estimatedMinutes,
-                            difficulty: step.difficulty,
-                            orderIndex: index
-                        )
-                        subtask.task = task
-                        task.subtasks.append(subtask)
-                    }
-
-                    // Get blended time estimate
-                    let estimate = estimationService.estimate(for: breakdown)
-                    task.predictedDuration = estimate.duration
-
-                } catch {
-                    // Task still created, just without AI breakdown
-                    print("AI breakdown failed: \(error.localizedDescription)")
+                if !check.isActionable {
+                    // Show alert asking user to rephrase or proceed without breakdown
+                    pendingTaskDescription = description
+                    isCreatingTask = false
+                    showingLegibilityAlert = true
+                    return
                 }
             }
 
-            newTaskDescription = ""
-            isCreatingTask = false
-            showingAddTask = false
+            await createTaskWithBreakdown(description: description)
         }
+    }
+
+    private func createTaskWithBreakdown(description: String) async {
+        let task = TaskRecord(taskDescription: description)
+        modelContext.insert(task)
+
+        // Try AI breakdown if available
+        if breakdownService.isAvailable {
+            do {
+                let breakdown = try await breakdownService.breakdownTask(description)
+
+                // Update task with AI results
+                task.category = breakdown.category
+                task.complexity = breakdown.complexity
+                task.stepCount = breakdown.steps.count
+
+                // Create subtasks from steps
+                for (index, step) in breakdown.steps.enumerated() {
+                    let subtask = SubtaskRecord(
+                        title: step.description,
+                        estimatedMinutes: step.estimatedMinutes,
+                        difficulty: step.difficulty,
+                        orderIndex: index
+                    )
+                    subtask.task = task
+                    task.subtasks.append(subtask)
+                }
+
+                // Get blended time estimate
+                let estimate = estimationService.estimate(for: breakdown)
+                task.predictedDuration = estimate.duration
+
+            } catch {
+                // Task still created, just without AI breakdown
+                print("AI breakdown failed: \(error.localizedDescription)")
+            }
+        }
+
+        newTaskDescription = ""
+        isCreatingTask = false
+        showingAddTask = false
+    }
+
+    private func createTaskWithoutBreakdown() {
+        let task = TaskRecord(taskDescription: pendingTaskDescription)
+        modelContext.insert(task)
+
+        newTaskDescription = ""
+        pendingTaskDescription = ""
+        showingAddTask = false
     }
 
     private func selectTask(_ task: TaskRecord) {
@@ -332,7 +382,10 @@ struct TaskListView: View {
 }
 
 #Preview("No AI") {
-    TaskListView(forceAIDisabled: true)
+    let view = TaskListView()
         .modelContainer(for: TaskRecord.self, inMemory: true)
+    // Note: To test with AI disabled, set breakdownService.forceDisabled = true
+    // in the service's DEBUG block
+    return view
 }
 #endif
