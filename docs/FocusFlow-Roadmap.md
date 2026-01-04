@@ -41,14 +41,14 @@ Personal checklist for tracking progress. Check items off as you complete them.
 
 ### Task Creation Flow
 - [X] `Views/TaskDetail/CreateTaskView.swift` — Input + AI breakdown
-- [ ] `Views/TaskDetail/SubtaskListView.swift` — Display generated steps
+- [X] `Views/TaskDetail/SubtaskListView.swift` — Display generated steps
 - [X] Loading states with streaming partial results
 - [X] Fallback UI for unsupported devices
 
 ### Availability Handling
 - [X] Check `SystemLanguageModel.default.isAvailable`
 - [X] User-friendly messages for each unavailability reason
-- [ ] Graceful degradation (manual task entry without AI)
+- [X] Graceful degradation (manual task entry without AI)
 
 ---
 

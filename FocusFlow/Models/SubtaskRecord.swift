@@ -17,6 +17,17 @@ final class SubtaskRecord {
     var orderIndex: Int
     var isComplete: Bool
 
+    // MARK: - Computed Properties
+
+    /// Scaled estimate based on user's historical pace
+    /// Falls back to AI estimate if no scale factor available
+    var scaledEstimateMinutes: Int {
+        guard let scaleFactor = task?.estimateScaleFactor else {
+            return estimatedMinutes
+        }
+        return max(1, Int(round(Double(estimatedMinutes) * scaleFactor)))
+    }
+
     // MARK: - Relationships
 
     /// Parent task (set automatically via inverse relationship)

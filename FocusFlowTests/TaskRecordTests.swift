@@ -40,7 +40,111 @@ struct TaskRecordTests {
 
         #expect(task.actualDuration == nil)
         #expect(task.startTime == nil)
+        #expect(task.accumulatedDuration == nil)
         #expect(task.endTime == nil)
+    }
+
+    @Test("Task states are correct for new task")
+    func taskStates_newTask() {
+        let task = TaskRecord(taskDescription: "New task")
+
+        #expect(task.isNotStarted == true)
+        #expect(task.isRunning == false)
+        #expect(task.isPaused == false)
+        #expect(task.elapsedDuration == 0)
+    }
+
+    @Test("start() begins timing")
+    func start_beginsTimimg() {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+
+        #expect(task.isRunning == true)
+        #expect(task.isNotStarted == false)
+        #expect(task.startTime != nil)
+        #expect(task.accumulatedDuration == 0)
+    }
+
+    @Test("pause() stops timing and accumulates")
+    func pause_stopsAndAccumulates() async throws {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+
+        // Wait a tiny bit for elapsed time
+        try await Task.sleep(for: .milliseconds(50))
+
+        task.pause()
+
+        #expect(task.isPaused == true)
+        #expect(task.isRunning == false)
+        #expect(task.startTime == nil)
+        #expect((task.accumulatedDuration ?? 0) > 0)
+    }
+
+    @Test("resume after pause continues accumulating")
+    func resume_continuesAccumulating() async throws {
+        let task = TaskRecord(taskDescription: "Test")
+
+        // First session
+        task.start()
+        try await Task.sleep(for: .milliseconds(50))
+        task.pause()
+
+        let afterFirstPause = task.accumulatedDuration ?? 0
+
+        // Second session
+        task.start()
+        try await Task.sleep(for: .milliseconds(50))
+        task.pause()
+
+        let afterSecondPause = task.accumulatedDuration ?? 0
+
+        #expect(afterSecondPause > afterFirstPause)
+    }
+
+    @Test("complete() with tracked time sets actualDuration")
+    func complete_setsActualDuration() async throws {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+        try await Task.sleep(for: .milliseconds(50))
+        task.complete()
+
+        #expect(task.isComplete == true)
+        #expect(task.actualDuration != nil)
+        #expect((task.actualDuration ?? 0) > 0)
+        #expect(task.endTime != nil)
+    }
+
+    @Test("complete() with override duration uses override")
+    func complete_withOverride_usesOverride() {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+        task.complete(withDuration: 1800)  // 30 minutes
+
+        #expect(task.actualDuration == 1800)
+    }
+
+    @Test("complete() when paused uses accumulated duration")
+    func complete_whenPaused_usesAccumulated() async throws {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+        try await Task.sleep(for: .milliseconds(50))
+        task.pause()
+
+        let accumulated = task.accumulatedDuration ?? 0
+        task.complete()
+
+        #expect(task.actualDuration == accumulated)
+    }
+
+    @Test("elapsedDuration includes current session when running")
+    func elapsedDuration_includesCurrentSession() async throws {
+        let task = TaskRecord(taskDescription: "Test")
+        task.start()
+        try await Task.sleep(for: .milliseconds(100))
+
+        let elapsed = task.elapsedDuration
+        #expect(elapsed >= 0.1)  // At least 100ms
     }
 
     @Test("Each task gets a unique ID")

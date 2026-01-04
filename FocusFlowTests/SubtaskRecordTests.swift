@@ -46,6 +46,49 @@ struct SubtaskRecordTests {
 
         #expect(subtask1.id != subtask2.id)
     }
+
+    @Test("scaledEstimateMinutes returns AI estimate when no scale factor")
+    func scaledEstimate_noScaleFactor_returnsOriginal() {
+        let subtask = SubtaskRecord(title: "Test", estimatedMinutes: 20)
+        // No parent task, so no scale factor
+        #expect(subtask.scaledEstimateMinutes == 20)
+    }
+
+    @Test("scaledEstimateMinutes applies parent's scale factor")
+    func scaledEstimate_appliesScaleFactor() {
+        let task = TaskRecord(taskDescription: "Parent")
+        task.estimateScaleFactor = 0.8  // User is 20% faster
+
+        let subtask = SubtaskRecord(title: "Test", estimatedMinutes: 20)
+        subtask.task = task
+
+        // 20 * 0.8 = 16
+        #expect(subtask.scaledEstimateMinutes == 16)
+    }
+
+    @Test("scaledEstimateMinutes never goes below 1")
+    func scaledEstimate_minimumIsOne() {
+        let task = TaskRecord(taskDescription: "Parent")
+        task.estimateScaleFactor = 0.1  // Very fast
+
+        let subtask = SubtaskRecord(title: "Test", estimatedMinutes: 2)
+        subtask.task = task
+
+        // 2 * 0.1 = 0.2, rounds to 0, but minimum is 1
+        #expect(subtask.scaledEstimateMinutes == 1)
+    }
+
+    @Test("scaledEstimateMinutes rounds correctly")
+    func scaledEstimate_roundsCorrectly() {
+        let task = TaskRecord(taskDescription: "Parent")
+        task.estimateScaleFactor = 1.25  // 25% slower
+
+        let subtask = SubtaskRecord(title: "Test", estimatedMinutes: 10)
+        subtask.task = task
+
+        // 10 * 1.25 = 12.5, rounds to 13
+        #expect(subtask.scaledEstimateMinutes == 13)
+    }
 }
 
 @Suite("SubtaskRecord Persistence")

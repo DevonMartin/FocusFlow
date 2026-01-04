@@ -10,16 +10,54 @@ import Foundation
 
 extension DesignSystem {
     enum Language {
-        // MARK: - Time Estimates
+        // MARK: - Duration Formatting
 
-        /// Time estimate with uncertainty framing
-        static func timeEstimate(_ minutes: Int) -> String {
-            "This might take about \(minutes) minutes"
+        /// Formats a duration in minutes to a human-readable string.
+        /// - Examples: "5 minutes", "1 hour", "2 hours", "2 hours 15 minutes"
+        static func formatDuration(minutes: Int) -> String {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+
+            if hours == 0 {
+                return remainingMinutes == 1 ? "1 minute" : "\(remainingMinutes) minutes"
+            } else if remainingMinutes == 0 {
+                return hours == 1 ? "1 hour" : "\(hours) hours"
+            } else {
+                let hourPart = hours == 1 ? "1 hour" : "\(hours) hours"
+                let minutePart = remainingMinutes == 1 ? "1 minute" : "\(remainingMinutes) minutes"
+                return "\(hourPart) \(minutePart)"
+            }
         }
 
-        /// Time estimate with confidence source
+        /// Formats a TimeInterval (seconds) to a human-readable string.
+        static func formatDuration(seconds: TimeInterval) -> String {
+            formatDuration(minutes: Int(seconds / 60))
+        }
+
+        // MARK: - Time Estimates
+
+        /// Time estimate for task rows and subtasks
+        /// - Examples: "Might take ~5 minutes", "Might take ~1 hour"
+        static func timeEstimate(_ minutes: Int) -> String {
+            "Might take ~\(formatDuration(minutes: minutes))"
+        }
+
+        /// Time estimate with confidence source (for detail views)
         static func timeEstimateWithConfidence(_ minutes: Int, confidence: String) -> String {
-            "About \(minutes) min (\(confidence))"
+            "~\(formatDuration(minutes: minutes)) (\(confidence))"
+        }
+
+        // MARK: - Completed Task Duration
+
+        /// Duration display for completed tasks (focuses on accomplishment)
+        /// - Examples: "Finished in 5 minutes", "Finished in 1 hour"
+        static func durationCompleted(minutes: Int) -> String {
+            "Finished in \(formatDuration(minutes: minutes))"
+        }
+
+        /// Duration display for completed tasks from TimeInterval
+        static func durationCompleted(seconds: TimeInterval) -> String {
+            durationCompleted(minutes: Int(seconds / 60))
         }
 
         // MARK: - Status Messages (never shame)

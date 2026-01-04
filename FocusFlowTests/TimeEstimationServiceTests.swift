@@ -14,14 +14,27 @@ struct TimeEstimateTests {
 
     @Test("minutes converts duration to minutes")
     func minutes_convertsDuration() {
-        let estimate = TimeEstimate(duration: 1800, confidence: .medium)  // 30 minutes
+        let estimate = TimeEstimate(duration: 1800, confidence: .medium, aiDuration: 1800)
         #expect(estimate.minutes == 30)
     }
 
     @Test("minutes truncates partial minutes")
     func minutes_truncatesPartial() {
-        let estimate = TimeEstimate(duration: 1850, confidence: .low)  // 30.83 minutes
+        let estimate = TimeEstimate(duration: 1850, confidence: .low, aiDuration: 1800)
         #expect(estimate.minutes == 30)
+    }
+
+    @Test("scaleFactor is blended/AI ratio")
+    func scaleFactor_isRatio() {
+        // Blended is 1620, AI is 1800 -> scale = 0.9
+        let estimate = TimeEstimate(duration: 1620, confidence: .low, aiDuration: 1800)
+        #expect(estimate.scaleFactor == 0.9)
+    }
+
+    @Test("scaleFactor defaults to 1.0 when aiDuration is zero")
+    func scaleFactor_defaultsToOne() {
+        let estimate = TimeEstimate(duration: 1000, confidence: .low, aiDuration: 0)
+        #expect(estimate.scaleFactor == 1.0)
     }
 }
 

@@ -19,9 +19,6 @@ struct TaskListView: View {
     @State private var pendingTaskDescription = ""
 
     @State private var breakdownService = TaskBreakdownService()
-    private var estimationService = TimeEstimationService(
-        estimator: EWMAEstimator()
-    )
 
     #if DEBUG
     @State private var showingPromptTesting = false
@@ -30,6 +27,7 @@ struct TaskListView: View {
     @State private var showingAIUnavailableAlert = false
     @State private var bannerDismissedThisSession = false
     @State private var showingBreakdownFailedAlert = false
+    @State private var taskToComplete: TaskRecord?
     @AppStorage("hasSeenAIUnavailableAlert") private var hasSeenAIUnavailableAlert = false
 
     var body: some View {
@@ -101,6 +99,14 @@ struct TaskListView: View {
                 Button("OK") { }
             } message: {
                 Text(DesignSystem.Language.breakdownFailedMessage)
+            }
+            .navigationDestination(for: TaskRecord.self) { task in
+                TaskDetailView(task: task)
+            }
+            .sheet(item: $taskToComplete) { task in
+                CompletionPromptView(task: task) {
+                    // Task completion handled by the view
+                }
             }
         }
     }
@@ -195,11 +201,17 @@ struct TaskListView: View {
         List {
             Section {
                 ForEach(incompleteTasks) { task in
-                    TaskRowView(
-                        task: task,
-                        onTap: { selectTask(task) },
-                        onComplete: { completeTask(task) }
-                    )
+                    ZStack {
+                        NavigationLink(value: task) {
+                            EmptyView()
+                        }
+                        .opacity(0)
+
+                        TaskRowContent(
+                            task: task,
+                            onComplete: { promptForCompletion(task) }
+                        )
+                    }
                     .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
@@ -226,9 +238,8 @@ struct TaskListView: View {
     private var completedSection: some View {
         Section(isExpanded: $isCompletedExpanded) {
             ForEach(completedTasks) { task in
-                TaskRowView(
+                TaskRowContent(
                     task: task,
-                    onTap: {},
                     onComplete: { uncompleteTask(task) }
                 )
                 .listRowInsets(EdgeInsets(top: 4, leading: 16, bottom: 4, trailing: 16))
@@ -388,8 +399,9 @@ struct TaskListView: View {
                 }
 
                 // Get blended time estimate
-                let estimate = estimationService.estimate(for: breakdown)
+                let estimate = TimeEstimationService.shared.estimate(for: breakdown)
                 task.predictedDuration = estimate.duration
+                task.estimateScaleFactor = estimate.scaleFactor
 
             } catch {
                 // Task still created, just without AI breakdown
@@ -412,21 +424,16 @@ struct TaskListView: View {
         showingAddTask = false
     }
 
-    private func selectTask(_ task: TaskRecord) {
-        // TODO: Navigate to task detail/timer view
-    }
-
-    private func completeTask(_ task: TaskRecord) {
-        withAnimation {
-            task.isComplete = true
-            task.completedAt = Date()
-        }
+    private func promptForCompletion(_ task: TaskRecord) {
+        taskToComplete = task
     }
 
     private func uncompleteTask(_ task: TaskRecord) {
         withAnimation {
             task.isComplete = false
             task.completedAt = nil
+            task.actualDuration = nil
+            task.endTime = nil
         }
     }
 

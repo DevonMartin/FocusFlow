@@ -16,16 +16,30 @@ struct TimeEstimate: Equatable, Sendable {
     /// Confidence level based on available historical data
     let confidence: ConfidenceLevel
 
+    /// Original AI estimate in seconds (before blending)
+    let aiDuration: TimeInterval
+
     /// Estimated duration in minutes (convenience accessor)
     var minutes: Int {
         Int(duration / 60)
+    }
+
+    /// Scale factor to apply to subtask estimates (blended / AI)
+    /// Values < 1 mean user is faster than AI predicts
+    /// Values > 1 mean user is slower than AI predicts
+    var scaleFactor: Double {
+        guard aiDuration > 0 else { return 1.0 }
+        return duration / aiDuration
     }
 }
 
 /// Pure service for estimating task durations.
 /// Combines AI estimates with EWMA-adjusted historical data.
 struct TimeEstimationService {
-	private var estimator: EWMAEstimator
+    /// Shared instance for app-wide use (uses UserDefaults-backed EWMA)
+    static var shared = TimeEstimationService(estimator: EWMAEstimator())
+
+    private var estimator: EWMAEstimator
 
     /// Creates a service with an injected estimator (for testing)
     init(estimator: EWMAEstimator) {
@@ -61,7 +75,7 @@ struct TimeEstimationService {
         // If we have historical data, blend AI estimate with EWMA
         guard let ewmaEstimate = estimator.estimate(for: category) else {
             // No history - use AI estimate directly with low confidence
-            return TimeEstimate(duration: aiDuration, confidence: .low)
+            return TimeEstimate(duration: aiDuration, confidence: .low, aiDuration: aiDuration)
         }
 
         // Blend based on confidence level
@@ -78,7 +92,7 @@ struct TimeEstimationService {
             blendedDuration = 0.3 * aiDuration + 0.7 * ewmaEstimate
         }
 
-        return TimeEstimate(duration: blendedDuration, confidence: confidence)
+        return TimeEstimate(duration: blendedDuration, confidence: confidence, aiDuration: aiDuration)
     }
 
     /// Estimates total duration for a task breakdown
