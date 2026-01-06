@@ -78,10 +78,10 @@ Personal checklist for tracking progress. Check items off as you complete them.
 ## Week 7-8: Polish & Ship
 
 ### Personalization
-- [ ] Record actual durations on completion
-- [ ] Feed data to EWMAEstimator
+- [X] Record actual durations on completion
+- [X] Feed data to EWMAEstimator
 - [ ] Display estimate source ("AI estimate" → "based on similar tasks")
-- [ ] Category-based learning working
+- [X] Category-based learning working
 
 ### Completion Flow
 - [ ] Completion celebration (same regardless of timing)
